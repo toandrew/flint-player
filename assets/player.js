@@ -69,6 +69,10 @@ sampleplayer.State = {
     IDLE: 'idle'
 };
 
+
+// used for pic
+var picShowed = false;
+
 var elementControl = {
     "init": function () {
         this.alertBox.init();
@@ -159,6 +163,11 @@ elementControl.player = {
         this.logo = document.getElementById("logo");
         this.timeLabel = document.getElementById("time-label");
         this.timePlayedString = document.getElementById("time-played-string");
+        
+        // pic
+        this.pic = document.getElementById("pic");
+        this.video = document.getElementById("video");
+        picShowed = false;
     },
 
     "loadedmetadata": function (duration) {
@@ -177,6 +186,13 @@ elementControl.player = {
     },
     "pause": function () {
         this.status = "pause";
+
+        if (picShowed) {
+            console.log("pic showed???!!!");
+            this.showPic();
+            return;
+        }
+
         this.showPlayIcon();
         this.showTimeline();
         this.showTitle();
@@ -188,6 +204,9 @@ elementControl.player = {
         this.hideTimeline();
         this.hideTitle();
         this.hideLogo();
+
+        picShowed = false;
+        this.hidePic();
     },
 
     "buffered": function (loadedTime) {
@@ -273,6 +292,17 @@ elementControl.player = {
     },
     "hideTimeLabelStatic": function(){
         this.timeLabel.className = "time-label hide_static";
+    }, 
+
+
+    // pic 
+    "showPic" : function() {
+        this.pic.className = "pic";
+        this.video.className = "video hide";
+    },
+    "hidePic" : function() {
+        this.video.className = "video";
+        this.pic.className = "pic hide";
     }
 };
 
@@ -370,6 +400,34 @@ sampleplayer.FlingPlayer = function (element) {
             }
         }, 3000);
     });
+
+    // add for pic
+    self = this;
+    self.messageBus = receiverWrapper.createMessageBus('urn:flint:tv.matchstick.demo.flingpic');
+    self.messageBus.on("message", function (message, senderId) {
+        var data = JSON.parse(message);
+        if (data.command == 'show') {
+
+            // hide all?
+            self.setState_(sampleplayer.State.IDLE);
+
+            picShowed = true;
+
+            // pause video?
+            var video = document.getElementById("video"); 
+            video.pause();
+
+            console.log('pic path: ' + data.file);
+            var pic = document.getElementById("pic"); 
+            pic.style.backgroundImage = 'url(' + data.file + ')';
+            elementControl.player.showPic();
+        } else {
+            console.log('Invalid message command: ' + data.command);
+        }
+    });
+
+
+
     //video finish event todo
     receiverWrapper.open();
 };
@@ -414,6 +472,7 @@ sampleplayer.FlingPlayer.prototype.setState_ = function (state, loading) {
     console.log('setState_ state: ' + state);
 
     var self = this;
+
 
     self.state_ = state;
     switch (state) {
