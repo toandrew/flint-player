@@ -626,7 +626,7 @@ sampleplayer.FlingPlayer.prototype.onStop_ = function () {
     console.log('onStop');
 
     if (this.mediaElement_) {
-        this.mediaElement_.src = null;
+        this.mediaElement_.src = "";
     }
 
     var self = this;
@@ -704,7 +704,7 @@ sampleplayer.FlingPlayer.prototype.onVisibilityChange_ = function () {
  *
  */
 sampleplayer.FlingPlayer.prototype.onError_ = function (e) {
-    if (this.mediaElement_ && this.mediaElement_.src == null) {
+    if (this.mediaElement_ && this.mediaElement_.src == "") {
         console.log("STOP COMMAND RECEIVED?");
         elementControl.alertBox.hide();
         self.setState_(sampleplayer.State.DONE);
