@@ -412,8 +412,20 @@ sampleplayer.FlingPlayer = function (element) {
         }, 3000);
     });
 
-    // add for pic
     self = this;
+    player.on('message', function(message) {
+        console.log("receive other message![STOP]?");
+        var messageData = JSON.parse(message);
+        if ("type" in messageData) {
+            switch (messageData.type) {
+                case "STOP":
+                self.onStop_();
+                break;
+            }
+        }
+    });
+
+    // add for pic
     self.messageBus = receiverWrapper.createMessageBus('urn:flint:tv.matchstick.demo.flingpic');
     self.messageBus.on("message", function (message, senderId) {
         var data = JSON.parse(message);
@@ -612,6 +624,11 @@ sampleplayer.FlingPlayer.prototype.onPause_ = function () {
  */
 sampleplayer.FlingPlayer.prototype.onStop_ = function () {
     console.log('onStop');
+
+    if (this.mediaElement_) {
+        this.mediaElement_.src = null;
+    }
+
     var self = this;
     self.setState_(sampleplayer.State.DONE);
 };
@@ -687,6 +704,13 @@ sampleplayer.FlingPlayer.prototype.onVisibilityChange_ = function () {
  *
  */
 sampleplayer.FlingPlayer.prototype.onError_ = function (e) {
+    if (this.mediaElement_ && this.mediaElement_.src == null) {
+        console.log("STOP COMMAND RECEIVED?");
+        elementControl.alertBox.hide();
+        self.setState_(sampleplayer.State.DONE);
+        return;
+    }
+
     console.log("MEDIA ELEMENT ERROR " + e.target.error.code);
     var self = this;
     switch (e.target.error.code) {
