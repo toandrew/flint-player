@@ -319,6 +319,8 @@ var volumeset_timeout = null;
 
 var alert_dlg_timeout = null;
 
+var stopCmdReceived = false;
+
 /****************************/
 /**
  * <p>
@@ -625,10 +627,12 @@ sampleplayer.FlingPlayer.prototype.onPause_ = function () {
 sampleplayer.FlingPlayer.prototype.onStop_ = function () {
     console.log('onStop');
 
+    // stop media player?
     if (this.mediaElement_) {
         this.mediaElement_.src = "";
     }
 
+    stopCmdReceived = true;
     var self = this;
     self.setState_(sampleplayer.State.DONE);
 };
@@ -704,7 +708,8 @@ sampleplayer.FlingPlayer.prototype.onVisibilityChange_ = function () {
  *
  */
 sampleplayer.FlingPlayer.prototype.onError_ = function (e) {
-    if (this.mediaElement_ && this.mediaElement_.src == "") {
+    if (stopCmdReceived) {
+        stopCmdReceived = false;
         console.log("STOP COMMAND RECEIVED?");
         elementControl.alertBox.hide();
         self.setState_(sampleplayer.State.DONE);
