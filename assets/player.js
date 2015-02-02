@@ -303,10 +303,21 @@ elementControl.player = {
     "hidePic" : function() {
         this.video.className = "video";
         this.pic.className = "pic hide";
+    },
+
+    "hideAlertDlg" : function() {
+        if (alert_dlg_timeout != null) {
+            clearTimeout(alert_dlg_timeout);
+            alert_dlg_timeout = null;
+        }
+
+        elementControl.alertBox.hide();
     }
 };
 
 var volumeset_timeout = null;
+
+var alert_dlg_timeout = null;
 
 /****************************/
 /**
@@ -421,6 +432,9 @@ sampleplayer.FlingPlayer = function (element) {
             var pic = document.getElementById("pic"); 
             pic.style.backgroundImage = 'url(' + data.file + ')';
             elementControl.player.showPic();
+
+            // hide alert dialog?
+            elementControl.player.hideAlertDlg();
         } else {
             console.log('Invalid message command: ' + data.command);
         }
@@ -473,13 +487,15 @@ sampleplayer.FlingPlayer.prototype.setState_ = function (state, loading) {
 
     var self = this;
 
-
     self.state_ = state;
     switch (state) {
         case sampleplayer.State.LOADING:
             elementControl.player.hidePlayIcon();
             elementControl.player.loadingStart();
             elementControl.player.hideLogo();
+
+            // hide alert dlg?
+            elementControl.player.hideAlertDlg();
             break;
         case sampleplayer.State.BUFFERING:
             elementControl.player.hideLogo();
@@ -692,7 +708,13 @@ sampleplayer.FlingPlayer.prototype.onError_ = function (e) {
     }
 
     this.setState_(sampleplayer.State.IDLE);
-    window.setTimeout(function () {
+
+    if (alert_dlg_timeout != null) {
+        clearTimeout(alert_dlg_timeout);
+        alert_dlg_timeout = null;
+    }
+
+    alert_dlg_timeout = window.setTimeout(function () {
         self.setState_(sampleplayer.State.DONE);
         elementControl.alertBox.hide();
     }, 10000);
