@@ -319,7 +319,6 @@ var volumeset_timeout = null;
 
 var alert_dlg_timeout = null;
 
-var stopCmdReceived = false;
 
 /****************************/
 /**
@@ -415,16 +414,10 @@ sampleplayer.FlingPlayer = function (element) {
     });
 
     self = this;
-    player.on('message', function(message) {
+    player.on('stop', function(customData) {
         console.log("receive other message![STOP]?");
-        var messageData = JSON.parse(message);
-        if ("type" in messageData) {
-            switch (messageData.type) {
-                case "STOP":
-                self.onStop_();
-                break;
-            }
-        }
+        var data = JSON.parse(customData);
+        self.onStop_(data);
     });
 
     // add for pic
@@ -624,16 +617,9 @@ sampleplayer.FlingPlayer.prototype.onPause_ = function () {
  * Callback called when media has been stopped
  *
  */
-sampleplayer.FlingPlayer.prototype.onStop_ = function () {
-    console.log('onStop');
+sampleplayer.FlingPlayer.prototype.onStop_ = function (customData) {
+    console.log('onStop[' + customData + "]");
 
-    // stop media player?
-    if (this.mediaElement_) {
-        this.mediaElement_.pause();
-        this.mediaElement_.currentTime=0;
-    }
-
-    stopCmdReceived = true;
     var self = this;
     self.setState_(sampleplayer.State.DONE);
 };
@@ -710,14 +696,6 @@ sampleplayer.FlingPlayer.prototype.onVisibilityChange_ = function () {
  */
 sampleplayer.FlingPlayer.prototype.onError_ = function (e) {
     var self = this;
-
-    if (stopCmdReceived) {
-        stopCmdReceived = false;
-        console.log("STOP COMMAND RECEIVED?");
-        elementControl.alertBox.hide();
-        self.setState_(sampleplayer.State.DONE);
-        return;
-    }
 
     console.log("MEDIA ELEMENT ERROR " + e.target.error.code);
     switch (e.target.error.code) {
