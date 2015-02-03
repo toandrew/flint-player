@@ -415,8 +415,7 @@ sampleplayer.FlingPlayer = function (element) {
 
     self = this;
     player.on('stop', function(customData) {
-        console.log("receive other message![STOP]?");
-        var data = JSON.parse(customData);
+        console.log("receive other message![STOP]!?");
         self.onStop_(data);
     });
 
