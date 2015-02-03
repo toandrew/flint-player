@@ -617,7 +617,7 @@ sampleplayer.FlingPlayer.prototype.onPause_ = function () {
  *
  */
 sampleplayer.FlingPlayer.prototype.onStop_ = function (customData) {
-    console.log('onStop[' + customData + "]");
+    console.log('onStop[' + customData.k + "]");
 
     var self = this;
     self.setState_(sampleplayer.State.DONE);
