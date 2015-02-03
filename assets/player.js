@@ -629,7 +629,8 @@ sampleplayer.FlingPlayer.prototype.onStop_ = function () {
 
     // stop media player?
     if (this.mediaElement_) {
-        this.mediaElement_.src = "";
+        this.mediaElement_.pause();
+        this.mediaElement_.currentTime=0;
     }
 
     stopCmdReceived = true;
