@@ -415,8 +415,8 @@ sampleplayer.FlingPlayer = function (element) {
 
     self = this;
     player.on('stop', function(customData) {
-        console.log("receive other message![STOP]!?");
-        self.onStop_(data);
+        console.log("receive other message![STOP]!!?");
+        self.onStop_(customData);
     });
 
     // add for pic
