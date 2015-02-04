@@ -69,10 +69,6 @@ sampleplayer.State = {
     IDLE: 'idle'
 };
 
-
-// used for pic
-var picShowed = false;
-
 var elementControl = {
     "init": function () {
         this.alertBox.init();
@@ -163,11 +159,6 @@ elementControl.player = {
         this.logo = document.getElementById("logo");
         this.timeLabel = document.getElementById("time-label");
         this.timePlayedString = document.getElementById("time-played-string");
-        
-        // pic
-        this.pic = document.getElementById("pic");
-        this.video = document.getElementById("video");
-        picShowed = false;
     },
 
     "loadedmetadata": function (duration) {
@@ -187,12 +178,6 @@ elementControl.player = {
     "pause": function () {
         this.status = "pause";
 
-        if (picShowed) {
-            console.log("pic showed???!!!");
-            this.showPic();
-            return;
-        }
-
         this.showPlayIcon();
         this.showTimeline();
         this.showTitle();
@@ -204,9 +189,6 @@ elementControl.player = {
         this.hideTimeline();
         this.hideTitle();
         this.hideLogo();
-
-        picShowed = false;
-        this.hidePic();
     },
 
     "buffered": function (loadedTime) {
@@ -297,12 +279,16 @@ elementControl.player = {
 
     // pic 
     "showPic" : function() {
-        this.pic.className = "pic";
-        this.video.className = "video hide";
+        var pic = document.getElementById("pic");
+        console.log("show pic!");
+        pic.style.zIndex = 1000;
+        pic.style.visibility="visible";
     },
     "hidePic" : function() {
-        this.video.className = "video";
-        this.pic.className = "pic hide";
+        var pic = document.getElementById("pic");
+        console.log("hide pic!");
+        pic.style.zIndex = -1;
+        pic.style.visibility="hidden";
     },
 
     "hideAlertDlg" : function() {
@@ -419,24 +405,47 @@ sampleplayer.FlingPlayer = function (element) {
         self.onStop_(customData);
     });
 
+    player.on('loadmedia', function(mediaMetadata) {
+        if (mediaMetadata != null && mediaMetadata.media != null && mediaMetadata.media.metadata != null && mediaMetadata.media.metadata.metadataType == 3) { // 0:generic, 1: movie:,  2:tv, 3: music, 4: photo, 100:user defined. see Android/iOS SDK for more info.
+            var url = null;
+            if (mediaMetadata.media.metadata.images[0] != null) {
+		console.log("img[" + mediaMetadata.media.metadata.images[0].url + "]");
+		url = mediaMetadata.media.metadata.images[0].url;
+            } else {
+                console.log('img is empty?use default!');
+                url = 'assets/imgs/music_bg.jpg';
+            }
+
+            var pic = document.getElementById("photo"); 
+            pic.src = url;
+            elementControl.player.showPic();
+
+            // hide alert dialog?
+            elementControl.player.hideAlertDlg();
+        } else {
+            // hide pic?
+            self.setState_(sampleplayer.State.IDLE);
+
+            elementControl.player.hidePic();
+	}
+
+        console.log("receive LOAD media!!?!!!!");
+    });
+
     // add for pic
     self.messageBus = receiverWrapper.createMessageBus('urn:flint:tv.matchstick.demo.flingpic');
     self.messageBus.on("message", function (message, senderId) {
         var data = JSON.parse(message);
         if (data.command == 'show') {
 
-            // hide all?
-            self.setState_(sampleplayer.State.IDLE);
-
-            picShowed = true;
+            console.log('pic path: ' + data.file);
 
             // pause video?
             var video = document.getElementById("video"); 
             video.pause();
 
-            console.log('pic path: ' + data.file);
-            var pic = document.getElementById("pic"); 
-            pic.style.backgroundImage = 'url(' + data.file + ')';
+            var pic = document.getElementById("photo"); 
+            pic.src = data.file;
             elementControl.player.showPic();
 
             // hide alert dialog?
@@ -527,6 +536,7 @@ sampleplayer.FlingPlayer.prototype.setState_ = function (state, loading) {
             elementControl.player.loadingStart();
             break;
         case sampleplayer.State.DONE:
+            console.log("done??");
             elementControl.player.showLogo();
             elementControl.player.hidePlayIconStatic();
             elementControl.player.loadingStop();
@@ -592,6 +602,7 @@ sampleplayer.FlingPlayer.prototype.onBuffering_ = function (event) {
  */
 sampleplayer.FlingPlayer.prototype.onPlaying_ = function () {
     console.log('onPlaying');
+
     if (this.state_ == sampleplayer.State.LOADING) {
         this.loading_time_out_ && clearTimeout(this.loading_time_out_);
         this.setState_(sampleplayer.State.PLAYING, true);
@@ -605,7 +616,7 @@ sampleplayer.FlingPlayer.prototype.onPlaying_ = function () {
  *
  */
 sampleplayer.FlingPlayer.prototype.onPause_ = function () {
-    console.log('onPause');
+    console.log('onPause[' + this.state_ + "]");
     if (this.state_ != sampleplayer.State.DONE) {
         this.setState_(sampleplayer.State.PAUSED);
     }
@@ -618,6 +629,8 @@ sampleplayer.FlingPlayer.prototype.onPause_ = function () {
  */
 sampleplayer.FlingPlayer.prototype.onStop_ = function (customData) {
     console.log('onStop[' + customData + "]");
+
+    elementControl.player.hidePic();
 
     var self = this;
     self.setState_(sampleplayer.State.DONE);

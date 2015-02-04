@@ -30,7 +30,7 @@ var MediaPlayer = function (manager, videoId) {
     self.requestIdSeek = 0;
     self.requestIdGetStatus = 0;
 
-    self.requestIdStop = 0; // STOP 
+    self.requestIdStop = 0; // STOP
 
     self.receiverManager = manager;
     var messageBus = self.receiverManager.createMessageBus("urn:flint:org.openflint.fling.media");
@@ -163,6 +163,14 @@ var MediaPlayer = function (manager, videoId) {
 
     self.load = function (url, videoType, title, subtitle, mediaMetadata) {
         self.mediaMetadata = mediaMetadata;
+
+        // do something when load
+        console.log("!!??load???!")
+        if ("onloadmedia" in self) {
+           console.log("hahax");
+           self.onloadmedia(self.mediaMetadata);
+        }
+        console.log("after ??load???!")
 
         self.status = "LOADDING";
         // var source = document.createElement('source');
