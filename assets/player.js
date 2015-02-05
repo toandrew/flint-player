@@ -406,11 +406,12 @@ sampleplayer.FlingPlayer = function (element) {
     });
 
     player.on('loadmedia', function(mediaMetadata) {
+        console.log("in loadmedia!");
         if (mediaMetadata != null && mediaMetadata.media != null && mediaMetadata.media.metadata != null && mediaMetadata.media.metadata.metadataType == 3) { // 0:generic, 1: movie:,  2:tv, 3: music, 4: photo, 100:user defined. see Android/iOS SDK for more info.
             var url = null;
-            if (mediaMetadata.media.metadata.images[0] != null) {
-		console.log("img[" + mediaMetadata.media.metadata.images[0].url + "]");
-		url = mediaMetadata.media.metadata.images[0].url;
+            if (mediaMetadata.media.metadata.images != null && mediaMetadata.media.metadata.images[0] != null) {
+		          console.log("img[" + mediaMetadata.media.metadata.images[0].url + "]");
+		          url = mediaMetadata.media.metadata.images[0].url;
             } else {
                 console.log('img is empty?use default!');
                 url = 'assets/imgs/music_bg.jpg';
