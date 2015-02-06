@@ -456,7 +456,7 @@ sampleplayer.FlingPlayer = function (element) {
             // in pic mode
             mode = 2;
 
-	    self.setState_(sampleplayer.State.DONE);
+	    self.setState_(sampleplayer.State.IDLE);
 
             console.log('pic path: ' + data.file);
 
