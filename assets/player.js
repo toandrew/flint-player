@@ -456,8 +456,8 @@ sampleplayer.FlingPlayer = function (element) {
             // in pic mode
             mode = 2;
 
-	    self.setState_(sampleplayer.State.IDLE);
-
+	    self.setState_(sampleplayer.State.DONE);
+            elementControl.player.hideLogo();
             console.log('pic path: ' + data.file);
 
             // pause video?
