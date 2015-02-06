@@ -411,11 +411,7 @@ h1 {
 
 
 .pic {
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-position: top left;
-  position: fixed;
+  position: absolute;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -423,8 +419,7 @@ h1 {
   color: #c0c0c0;
   font-size: 24px;
   overflow: hidden;
-  z-index:-1;
-  display: block;
+  z-index:1;
 }
 
 #photo {

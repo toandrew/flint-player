@@ -69,6 +69,9 @@ sampleplayer.State = {
     IDLE: 'idle'
 };
 
+// in which mode?
+var mode = 0; // 0: default video mode. 1: music mode, 2: pic mode
+
 var elementControl = {
     "init": function () {
         this.alertBox.init();
@@ -279,15 +282,15 @@ elementControl.player = {
 
     // pic 
     "showPic" : function() {
-        var pic = document.getElementById("pic");
+        var pic = document.getElementById("photo");
         console.log("show pic!");
-        pic.style.zIndex = 1000;
+        //pic.style.zIndex = 1;
         pic.style.visibility="visible";
     },
     "hidePic" : function() {
-        var pic = document.getElementById("pic");
+        var pic = document.getElementById("photo");
         console.log("hide pic!");
-        pic.style.zIndex = -1;
+        //pic.style.zIndex = -1;
         pic.style.visibility="hidden";
     },
 
@@ -408,6 +411,10 @@ sampleplayer.FlingPlayer = function (element) {
     player.on('loadmedia', function(mediaMetadata) {
         console.log("in loadmedia!");
         if (mediaMetadata != null && mediaMetadata.media != null && mediaMetadata.media.metadata != null && mediaMetadata.media.metadata.metadataType == 3) { // 0:generic, 1: movie:,  2:tv, 3: music, 4: photo, 100:user defined. see Android/iOS SDK for more info.
+
+            // in music mode
+            mode = 1;
+
             var url = null;
             if (mediaMetadata.media.metadata.images != null && mediaMetadata.media.metadata.images[0] != null) {
 		          console.log("img[" + mediaMetadata.media.metadata.images[0].url + "]");
@@ -417,6 +424,9 @@ sampleplayer.FlingPlayer = function (element) {
                 url = 'assets/imgs/music_bg.jpg';
             }
 
+            // hide all?
+            self.setState_(sampleplayer.State.IDLE);
+
             var pic = document.getElementById("photo"); 
             pic.src = url;
             elementControl.player.showPic();
@@ -424,11 +434,15 @@ sampleplayer.FlingPlayer = function (element) {
             // hide alert dialog?
             elementControl.player.hideAlertDlg();
         } else {
-            // hide pic?
+
+            // in movie mode
+            mode = 0;
+
+            // hide all?
             self.setState_(sampleplayer.State.IDLE);
 
             elementControl.player.hidePic();
-	}
+	   }
 
         console.log("receive LOAD media!!?!!!!");
     });
@@ -438,6 +452,11 @@ sampleplayer.FlingPlayer = function (element) {
     self.messageBus.on("message", function (message, senderId) {
         var data = JSON.parse(message);
         if (data.command == 'show') {
+
+            // in pic mode
+            mode = 2;
+
+	    self.setState_(sampleplayer.State.DONE);
 
             console.log('pic path: ' + data.file);
 
@@ -455,8 +474,6 @@ sampleplayer.FlingPlayer = function (element) {
             console.log('Invalid message command: ' + data.command);
         }
     });
-
-
 
     //video finish event todo
     receiverWrapper.open();
@@ -478,6 +495,14 @@ sampleplayer.FlingPlayer.prototype.onLoadedMetadata_ = function () {
 };
 
 sampleplayer.FlingPlayer.prototype.onPlay_ = function () {
+
+    // when play happened?
+    if (mode != 0) {
+        elementControl.player.showPic();
+    } else {
+        elementControl.player.hidePic();
+    }
+
     console.log('onPlay');
     this.loading_time_out_ && clearTimeout(this.loading_time_out_);
     console.log('onplay clear time out');
@@ -538,7 +563,11 @@ sampleplayer.FlingPlayer.prototype.setState_ = function (state, loading) {
             break;
         case sampleplayer.State.DONE:
             console.log("done??");
-            elementControl.player.showLogo();
+
+            if (mode == 0) {
+                elementControl.player.showLogo();
+            }
+
             elementControl.player.hidePlayIconStatic();
             elementControl.player.loadingStop();
             elementControl.player.hideTitleStatic();
@@ -644,6 +673,13 @@ sampleplayer.FlingPlayer.prototype.onStop_ = function (customData) {
  */
 sampleplayer.FlingPlayer.prototype.onEnded_ = function () {
     console.log('onEnded');
+
+    // not in pic mode?
+    if (mode != 2) {
+        elementControl.player.hidePic();
+        elementControl.player.showLogo();
+    }
+
     this.setState_(sampleplayer.State.DONE);
 };
 
@@ -709,6 +745,11 @@ sampleplayer.FlingPlayer.prototype.onVisibilityChange_ = function () {
  */
 sampleplayer.FlingPlayer.prototype.onError_ = function (e) {
     var self = this;
+
+    if (mode != 0) {
+        console.log("in pic mode. ignore error:" + e.target.error.code);
+        return;
+    }
 
     console.log("MEDIA ELEMENT ERROR " + e.target.error.code);
     switch (e.target.error.code) {
