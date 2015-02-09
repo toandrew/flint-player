@@ -409,9 +409,13 @@ h1 {
     display:none;
 }
 
-
-.pic {
-  position: absolute;
+#pic {
+text-align: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: top left;
+  position: fixed;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -419,10 +423,5 @@ h1 {
   color: #c0c0c0;
   font-size: 24px;
   overflow: hidden;
-  z-index:1;
 }
 
-#photo {
-  width: 100%;
-  height: 100%;
-}

@@ -279,19 +279,16 @@ elementControl.player = {
         this.timeLabel.className = "time-label hide_static";
     }, 
 
-
     // pic 
     "showPic" : function() {
-        var pic = document.getElementById("photo");
+        var photo = document.getElementById("photo");
         console.log("show pic!");
-        //pic.style.zIndex = 1;
-        pic.style.visibility="visible";
+        photo.style.visibility="visible";
     },
     "hidePic" : function() {
-        var pic = document.getElementById("photo");
+        var photo = document.getElementById("photo");
         console.log("hide pic!");
-        //pic.style.zIndex = -1;
-        pic.style.visibility="hidden";
+        photo.style.visibility="hidden";
     },
 
     "hideAlertDlg" : function() {
@@ -415,6 +412,9 @@ sampleplayer.FlingPlayer = function (element) {
             // in music mode
             mode = 1;
 
+            // hide it first?
+            elementControl.player.hidePic();
+
             var url = null;
             if (mediaMetadata.media.metadata.images != null && mediaMetadata.media.metadata.images[0] != null) {
 		          console.log("img[" + mediaMetadata.media.metadata.images[0].url + "]");
@@ -427,9 +427,9 @@ sampleplayer.FlingPlayer = function (element) {
             // hide all?
             self.setState_(sampleplayer.State.IDLE);
 
-            var pic = document.getElementById("photo"); 
-            pic.src = url;
-            elementControl.player.showPic();
+            // pic will be shown in "AutoResizeImage"
+            var photo = document.getElementById("photo");
+            photo.src = url;
 
             // hide alert dialog?
             elementControl.player.hideAlertDlg();
@@ -442,7 +442,7 @@ sampleplayer.FlingPlayer = function (element) {
             self.setState_(sampleplayer.State.IDLE);
 
             elementControl.player.hidePic();
-	   }
+        }
 
         console.log("receive LOAD media!!?!!!!");
     });
@@ -456,6 +456,9 @@ sampleplayer.FlingPlayer = function (element) {
             // in pic mode
             mode = 2;
 
+            // hide it first?
+            elementControl.player.hidePic();
+
 	    self.setState_(sampleplayer.State.DONE);
             elementControl.player.hideLogo();
             console.log('pic path: ' + data.file);
@@ -463,10 +466,11 @@ sampleplayer.FlingPlayer = function (element) {
             // pause video?
             var video = document.getElementById("video"); 
             video.pause();
+            video.style.visibility="hidden";
 
-            var pic = document.getElementById("photo"); 
-            pic.src = data.file;
-            elementControl.player.showPic();
+            // pic will be shown in "AutoResizeImage"
+            var photo = document.getElementById("photo");
+            photo.src = data.file;
 
             // hide alert dialog?
             elementControl.player.hideAlertDlg();
@@ -539,6 +543,11 @@ sampleplayer.FlingPlayer.prototype.setState_ = function (state, loading) {
             elementControl.player.hideAlertDlg();
             break;
         case sampleplayer.State.BUFFERING:
+            // in pic mode, ignore it!
+            if (mode == 2) {
+               console.log("in pic mode, ignore BUFFERING state!");
+               return;
+            }
             elementControl.player.hideLogo();
             elementControl.player.loadingStart();
             elementControl.player.showTimeline();
@@ -847,4 +856,54 @@ window.onload = function () {
     //         }
     //     }, 3000);
     // }
+};
+
+
+function AutoResizeImage(objImg){
+    var img = new Image();
+    img.src = objImg.src;
+
+        console.log("AutoResizeImage 111" );
+    var hRatio;
+    var wRatio;
+    var Ratio = 1;
+    var w = img.width;
+    var h = img.height;
+
+        console.log("AutoResizeImage 222 " + w + "  " + h);
+
+    var maxHeight = document.getElementById("pic").offsetHeight; 
+    var maxWidth = document.getElementById("pic").offsetWidth; 
+
+        console.log("AutoResizeImage 333 " + maxWidth + "  " + maxHeight);
+
+    if(h >= w){
+        Ratio = maxHeight / h;
+        w = w * Ratio;
+        h = maxHeight;
+        document.getElementById('pic').style.cssText = "margin-top:0px;";
+
+        console.log("AutoResizeImage 444 " + w + "  " + h);
+    }else{
+        Ratio = maxWidth / w;
+        h = h * Ratio;
+        w = maxWidth;
+        if(h > maxHeight){
+            Ratio = maxHeight / h;
+            w = w * Ratio;
+            h = maxHeight;
+            document.getElementById('pic').style.cssText = "margin-top:0px;";
+        }else{
+            var top = (maxHeight - h) / 2;
+            document.getElementById('pic').style.cssText = "margin-top:"+top+"px;";
+        }
+        console.log("AutoResizeImage 555 " + w + "  " + h);
+    }
+
+    objImg.height = h;
+    objImg.width = w;
+    console.log("AutoResizeImage 666 " + w + "  " + h);
+
+    console.log("show pic now?!");
+    elementControl.player.showPic();
 };
